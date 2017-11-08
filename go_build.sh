@@ -229,7 +229,7 @@ if [[ $# == 0 ]];then
         echo ""
 		echo "方法2.with busybox:"
 		echo "方法2.step1:./$0 mkfs /data/sandbox/vm/Disk01.raw(device) /data/sandbox/vm/Img01(mountpoint)"
-        echo "方法2.step2:./$0 modules_install /data/sandbox/alikernel-4.9/kernel-4.9/ /data/sandbox/vm/Img02/"
+        echo "方法2.step2:./$0 modules_install /data/sandbox/alikernel-4.9/kernel-4.9/ /data/sandbox/vm/Img01/"
         echo "方法2.step3:./$0 busybox_boot /xx/xx/bzImage /data/sandbox/vm/Disk01.raw"
         echo "方法2.step4:./$0 kill"
         echo ""
