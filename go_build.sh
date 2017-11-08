@@ -1,4 +1,6 @@
 #!/bin/sh
+#ref:https://www.atatech.org/articles/91600
+#ref:http://www.cnblogs.com/muahao/p/7803844.html
 
 # 1. 一键部署kernel开发环境
 #        1.1 git clone linux qemu buildroot
