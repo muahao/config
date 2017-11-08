@@ -20,10 +20,6 @@
 #       qemu/
 #   alikernel/
 
-#cmd_qemu_system=`find . -name qemu-system-x86_64`
-cmd_qemu_system="./open_linux/qemu/x86_64-softmmu/qemu-system-x86_64"
-#cmd_qemu_img=`find . -name qemu-img`
-cmd_qemu_img="./open_linux/qemu/qemu-img"
 #iso_path=`find . -name Fedora-Server-dvd-x86_64-25-1.3.iso`
 gitinfo="
 git clone https://github.com/torvalds/linux.git\n
@@ -33,13 +29,7 @@ git clone git@gitlab.alibaba-inc.com:alikernel/kernel-4.9.git\n
 git clone https://github.com/muahao/config.git\n
 wget http://busybox.net/downloads/busybox-1.27.2.tar.bz2\n"
 
-root_dir=`cd "$(dirname "$0")";pwd`
-
-#root dir
-if [[ $root_dir != "/data/sandbox" ]];then
-        echo "Please at root dir /data/sandbox, now we are at:`pwd`"
-fi
-
+#根目录:
 root_dir="/data/sandbox/"
 open_linux_dir="${root_dir}/open_linux"
 buildroot_dir="${open_linux_dir}/buildroot/"
@@ -49,14 +39,18 @@ alikernel4_9_dir="${root_dir}/alikernel-4.9/"
 busybox_dir="${open_linux_dir}/busybox-1.27.2/"
 vm_path="${root_dir}/vm/"
 
+#命令路径:
+#cmd_qemu_system=`find . -name qemu-system-x86_64`
+cmd_qemu_system="${qemu_dir}/x86_64-softmmu/qemu-system-x86_64"
+#cmd_qemu_img=`find . -name qemu-img`
+cmd_qemu_img="${qemu_dir}/qemu-img"
+
 cd $root_dir
 #####################环境检查：
 prepare(){
         if [[ ! -e ${cmd_qemu_system} || ! -e ${cmd_qemu_img} ]];then
                 echo "$cmd_qemu_system not exist!"
                 exit 1
-        else
-                echo "$cmd_qemu_system ok!"
         fi
 
         pwd_dir=`pwd`
@@ -72,6 +66,19 @@ prepare(){
 		fi
 }
 
+check(){
+	if [[ ! -d "${buildrooot}/output/images" ]];then
+		echo "Error: ${buildrooot}/output/images not exist! You shuld build buildroot!"
+		exit 1
+	fi
+
+	if [[ ! -e ${cmd_qemu_system} || ! -e ${cmd_qemu_img} ]];then
+		echo "cmd_qemu_system: $cmd_qemu_system not exist!"
+		echo "cmd_qemu_img:$cmd_qemu_img not exist!"
+		exit 1
+	fi
+
+}
 
 ###################预备编译工作：
 configure_buildroot(){
@@ -208,6 +215,7 @@ ${cmd_qemu_system} \
 		-serial mon:stdio -nographic \
 		-kernel $kernel_bzImage \
         -append "init=/linuxrc root=/dev/sda earlyprintk=ttyS0 console=ttyS0 debug" \
+	fi
         -drive format=raw,file=${img_name}
 
 #    -append "console=ttyS0" \
@@ -222,8 +230,8 @@ kill_02(){
 #############help
 if [[ $# == 0 ]];then
         echo "一键部署:./$0 one_deploy"
-        echo "编译:./$0 configure buildroot/linux/qemu/busybox"
-        echo "环境检查:./$0 prepare"
+        echo "指定编译:./$0 configure buildroot/linux/qemu/busybox"
+        echo "环境检查:./$0 check"
         echo ""
 		echo "方法1.step1:./$0 creat_image /data/sandbox/vm/disk01.raw(device)"
         echo "方法1.step2:./$0 start_vm /xx/xx/bzImage /data/sandbox/vm/disk01.raw"
@@ -236,13 +244,20 @@ if [[ $# == 0 ]];then
         echo "方法2.step4:./$0 kill"
         echo ""
         echo "bzImage列表:"
-        echo `find . -name bzImage`
+		cd /
+        echo `find /data/sandbox/ -name bzImage`
+		cd $root_dir
         echo ""
         echo -e "Git信息:\n`echo -e $gitinfo`-e "
         echo ""
 
 else
-        #检查环境
+        #检查环境.常见错误
+        if [[ $1 == "check" ]];then
+			check
+		fi
+
+        #环境准备，必要的目录结构
         prepare
 
         #一键部署
